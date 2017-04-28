@@ -7,10 +7,12 @@ package com.tidal.hao.model;
 public class Artist {
     private String profilePicture;
     private String name;
+    private int id;
 
-    public Artist(String profilePicture, String name){
+    public Artist(String profilePicture, String name, int id){
         this.profilePicture = profilePicture;
         this.name = name;
+        this.id = id;
     }
 
     public String getProfilePicture() {
@@ -20,4 +22,6 @@ public class Artist {
     public String getName() {
         return name;
     }
+
+    public int getId() { return id; }
 }

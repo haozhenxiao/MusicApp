@@ -2,6 +2,7 @@ package com.tidal.hao.tidal;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -69,7 +70,7 @@ public class ArtistListActivity extends Activity {
                                         try{
                                             JSONObject obj = artistsArray.getJSONObject(i);
                                             JSONObject artistObj = obj.getJSONObject("artist");
-                                            Artist artist = new Artist(artistObj.getString("picture_small"), artistObj.getString("name"));
+                                            Artist artist = new Artist(artistObj.getString("picture_small"), artistObj.getString("name"), artistObj.getInt("id"));
                                             artists.add(artist);
                                         }catch (JSONException e){
                                             e.printStackTrace();
@@ -88,6 +89,15 @@ public class ArtistListActivity extends Activity {
                             }
                         });
                 AppController.getInstance().addToRequestQueue(jsObjRequest);
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent albumListActivity = new Intent(getApplicationContext(), AlbumListActivity.class);
+                albumListActivity.putExtra("artist", artists.get(position).getId());
+                startActivity(albumListActivity);
             }
         });
 

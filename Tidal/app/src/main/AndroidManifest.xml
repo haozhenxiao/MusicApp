@@ -21,6 +21,8 @@
         </activity>
         <activity android:name=".AlbumListActivity">
         </activity>
+        <activity android:name=".TrackListActivity">
+        </activity>
     </application>
 
 </manifest>

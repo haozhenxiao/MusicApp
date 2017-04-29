@@ -1,20 +1,20 @@
 package com.tidal.hao.tidal;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.GridView;
+import android.util.Log;
+import android.widget.ListView;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.tidal.hao.adapter.AlbumAdapter;
+import com.android.volley.toolbox.NetworkImageView;
+import com.tidal.hao.adapter.TrackAdapter;
 import com.tidal.hao.app.AppController;
-import com.tidal.hao.model.Album;
+import com.tidal.hao.model.Track;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,30 +23,32 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.tidal.hao.tidal.R.id.artistSearch;
-
 /**
- * Created by hao on 4/28/2017.
+ * Created by hao on 4/29/2017.
  */
 
-public class AlbumListActivity extends Activity {
-
-    private List<Album> albums = new ArrayList<Album>();
-    private GridView gridView;
-    private AlbumAdapter adapter;
+public class TrackListActivity extends Activity{
+    private List<Track> tracks = new ArrayList<Track>();
+    private ListView listView;
+    private TrackAdapter adapter;
+    ImageLoader imageLoader = AppController.getInstance().getImageLoader();
+    NetworkImageView albumPicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.album_list);
+        setContentView(R.layout.track_list);
 
-        gridView = (GridView)findViewById(R.id.albumList);
-        adapter = new AlbumAdapter(this, albums);
-        gridView.setAdapter(adapter);
+        listView = (ListView)findViewById(R.id.trackList);
+        adapter = new TrackAdapter(this, tracks);
+        listView.setAdapter(adapter);
 
-        int artist = getIntent().getIntExtra("artist", 0);
+        String albumPictureUrl = getIntent().getStringExtra("album_pic");
+        albumPicture = (NetworkImageView)findViewById(R.id.trackAlbumPicture);
+        albumPicture.setImageUrl(albumPictureUrl, imageLoader);
+        String albumId = getIntent().getStringExtra("album_id");
 
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, getUrl(artist), null,
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, getUrl(albumId), null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -55,8 +57,10 @@ public class AlbumListActivity extends Activity {
                             for(int i = 0; i < artistsArray.length(); ++i){
                                 try{
                                     JSONObject obj = artistsArray.getJSONObject(i);
-                                    Album album = new Album(obj.getString("cover_medium"), obj.getString("title"), obj.getString("id"), obj.getString("cover_medium"));
-                                    albums.add(album);
+                                    JSONObject artistObj = obj.getJSONObject("artist");
+                                    String artist = artistObj.getString("name");
+                                    Track track = new Track(obj.getString("title"), artist, obj.getInt("duration"));
+                                    tracks.add(track);
                                 }catch (JSONException e){
                                     e.printStackTrace();
                                 }
@@ -74,19 +78,9 @@ public class AlbumListActivity extends Activity {
                     }
                 });
         AppController.getInstance().addToRequestQueue(jsObjRequest);
-
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent trackActivity = new Intent(getApplicationContext(), TrackListActivity.class);
-                trackActivity.putExtra("album_id", albums.get(position).getId());
-                trackActivity.putExtra("album_pic", albums.get(position).getCoverImageMedium());
-                startActivity(trackActivity);
-            }
-        });
     }
 
-    static String getUrl(int key) {
-        return "http://api.deezer.com/artist/" + key + "/albums";
+    static String getUrl(String key) {
+        return "http://api.deezer.com/album/" + key + "/tracks";
     }
 }
